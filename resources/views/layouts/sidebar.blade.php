@@ -127,6 +127,11 @@
                 <i class="nav-main-link-icon si si-basket"></i>
                 <span class="nav-main-link-name">Product</span>
             </a>
+            <a class="nav-main-link {{ request()->routeIs('master.suppiers') ? 'active' : '' }}"
+                href="{{ route('master.suppliers') }}">
+                <i class="nav-main-link-icon si si-briefcase"></i>
+                <span class="nav-main-link-name">Supplier</span>
+            </a>
           </li>
         </ul>
       </div>
