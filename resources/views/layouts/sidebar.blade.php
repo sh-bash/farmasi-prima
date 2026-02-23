@@ -133,6 +133,19 @@
                 <span class="nav-main-link-name">Supplier</span>
             </a>
           </li>
+          <li class="nav-main-heading">Account</li>
+          <li class="nav-main-item">
+            <a class="nav-main-link {{ request()->routeIs('account.roles') ? 'active' : '' }}"
+                href="{{ route('account.roles') }}">
+                <i class="nav-main-link-icon si si-link"></i>
+                <span class="nav-main-link-name">Role</span>
+            </a>
+            <a class="nav-main-link {{ request()->routeIs('account.users') ? 'active' : '' }}"
+                href="{{ route('account.users') }}">
+                <i class="nav-main-link-icon si si-user"></i>
+                <span class="nav-main-link-name">User</span>
+            </a>
+          </li>
         </ul>
       </div>
       <!-- END Side Navigation -->
