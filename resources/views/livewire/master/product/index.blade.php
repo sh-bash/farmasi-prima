@@ -116,8 +116,9 @@
                 <thead>
                     <tr>
                         <th width="120">Action</th>
-                        <th>Barcode</th>
                         <th>Name</th>
+                        <th>Form</th>
+                        <th>Category</th>
                         <th width="150">HET</th>
                         <th width="160">Created</th>
                     </tr>
@@ -139,7 +140,6 @@
                                     </button>
                                 </div>
                             </td>
-                            <td>{{ $p->barcode }}</td>
                             <td>
                                 {{ $p->name }}
                             @if($p->ingredients->count())
@@ -155,6 +155,8 @@
                                 </small>
                             @endif
                             </td>
+                            <td>{{ $p->form->name }}</td>
+                            <td>{{ $p->category->name }}</td>
                             <td>{{ number_format($p->het) }}</td>
                             <td>
                                 {{ $p->created_at->format('d M Y') }}<br>

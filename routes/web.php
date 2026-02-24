@@ -5,6 +5,7 @@ use App\Livewire\Master\Product\Index as ProductIndex;
 use App\Livewire\Master\Supplier\Index as SupplierIndex;
 use App\Livewire\Account\Role\Index as RoleIndex;
 use App\Livewire\Account\User\Index as UserIndex;
+use App\Livewire\Master\Product\KnnTest as KNNTest;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,3 +22,5 @@ Route::prefix('account')->group(function () {
     Route::get('/roles', RoleIndex::class)->name('account.roles');
     Route::get('/users', UserIndex::class)->name('account.users');
 });
+
+Route::get('/knn-test', KNNTest::class)->name('test.knn');

@@ -146,6 +146,14 @@
                 <span class="nav-main-link-name">User</span>
             </a>
           </li>
+          <li class="nav-main-heading">AI Test</li>
+          <li class="nav-main-item">
+            <a class="nav-main-link {{ request()->routeIs('test.knn') ? 'active' : '' }}"
+                href="{{ route('test.knn') }}">
+                <i class="nav-main-link-icon si si-link"></i>
+                <span class="nav-main-link-name">KNN Test</span>
+            </a>
+          </li>
         </ul>
       </div>
       <!-- END Side Navigation -->

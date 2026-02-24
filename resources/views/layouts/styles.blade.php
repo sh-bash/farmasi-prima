@@ -8,6 +8,8 @@
 <!-- Stylesheets -->
 <!-- OneUI framework -->
 <link rel="stylesheet" id="css-main" href="{{ asset('assets/css/oneui.min.css') }}">
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <!-- Load and set color theme + dark mode preference (blocking script to prevent flashing) -->
 <script src="{{ asset('assets/js/setTheme.js') }}"></script>
