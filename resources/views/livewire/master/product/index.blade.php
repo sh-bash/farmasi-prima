@@ -140,7 +140,21 @@
                                 </div>
                             </td>
                             <td>{{ $p->barcode }}</td>
-                            <td>{{ $p->name }}</td>
+                            <td>
+                                {{ $p->name }}
+                            @if($p->ingredients->count())
+                                <small class="text-muted d-block">
+                                    @foreach($p->ingredients as $i)
+                                        <div>
+                                            {{ $i->name }}
+                                            @if($i->pivot->strength)
+                                                {{ number_format($i->pivot->strength, 0) }} {{ $i->pivot->unit }}
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </small>
+                            @endif
+                            </td>
                             <td>{{ number_format($p->het) }}</td>
                             <td>
                                 {{ $p->created_at->format('d M Y') }}<br>

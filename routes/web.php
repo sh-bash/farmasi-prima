@@ -15,11 +15,9 @@ Route::prefix('master')->group(function () {
     Route::get('/products', ProductIndex::class)->name('master.products');
     Route::get('/suppliers', SupplierIndex::class)->name('master.suppliers');
     // Route::get('/patients', PatientIndex::class)->name('master.patients');
-
 });
 
 Route::prefix('account')->group(function () {
     Route::get('/roles', RoleIndex::class)->name('account.roles');
     Route::get('/users', UserIndex::class)->name('account.users');
-
 });

@@ -62,6 +62,7 @@ class Index extends Component
         $products = Product::where('name', 'like', '%' . $this->search . '%')
             ->orWhere('barcode', 'like', '%' . $this->search . '%')
             ->latest()
+            ->with('ingredients')
             ->paginate(5);
 
         return view('livewire.master.product.index', compact('products'))
