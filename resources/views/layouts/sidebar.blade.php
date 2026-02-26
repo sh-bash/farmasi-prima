@@ -132,6 +132,11 @@
                 <i class="nav-main-link-icon si si-briefcase"></i>
                 <span class="nav-main-link-name">Supplier</span>
             </a>
+            <a class="nav-main-link {{ request()->routeIs('master.suppiers') ? 'active' : '' }}"
+                href="{{ route('master.patients') }}">
+                <i class="nav-main-link-icon si si-briefcase"></i>
+                <span class="nav-main-link-name">Patient</span>
+            </a>
           </li>
           <li class="nav-main-heading">Account</li>
           <li class="nav-main-item">

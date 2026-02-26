@@ -1,33 +1,44 @@
 <?php
 
-namespace App\Models\Master;
+namespace App\Models\Transaction;
 
 use App\Models\User;
+use App\Models\Master\Product;
 use App\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Patient extends Model
+class PurchaseDetail extends Model
 {
     use SoftDeletes, Blameable;
+
     protected $fillable = [
-        'medical_record_number',
-        'name',
-        'birth_date',
-        'gender',
-        'address',
-        'phone',
+        'purchase_id',
+        'product_id',
+
+        'qty',
+        'price',
+        'discount',
+        'total',
+
         'created_by',
         'updated_by',
         'deleted_by'
     ];
 
-    protected $casts = [
-        'birth_date' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-    ];
+    /* =========================
+       RELATION
+    ==========================*/
+
+    public function purchase()
+    {
+        return $this->belongsTo(Purchase::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function creator()
     {

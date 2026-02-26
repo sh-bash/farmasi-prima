@@ -29,9 +29,9 @@ class KnnTest extends Component
         $this->selectedProduct = Product::with('ingredients')
             ->find($productId);
 
-        $this->substitutes = KnnHelper::findSubstitutes($productId, 5);
+        $this->substitutes = KnnHelper::findSubstitutes($productId, 3);
 
-        $this->knnProcess = KNNHelper::findSubstitutesFullProcess($productId, 5);
+        $this->knnProcess = KNNHelper::findSubstitutesFullProcess($productId, 3);
         // $this->knnDetail = KNNHelper::findSubstitutesWithDetail($productId, 5);
         // $this->substitutes = collect($this->knnDetail['results'])->pluck('product');
     }
