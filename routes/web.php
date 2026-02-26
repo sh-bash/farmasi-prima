@@ -95,7 +95,7 @@ Route::middleware(['auth'])->group(function () {
                 ->name('transaction.purchases.edit');
 
             Route::get('/payment/{id}', PurchasePayment::class)
-                ->middleware('permission:purchase.payment')
+                ->middleware('permission:purchase.create')
                 ->name('transaction.purchases.payment');
 
             Route::get('/transaction/purchases/{id}',PurchaseShow::class)

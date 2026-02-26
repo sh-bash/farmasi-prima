@@ -148,6 +148,72 @@
                  RIGHT SIDE (SUMMARY)
             ==========================--}}
             <div class="col-lg-4">
+                <div class="block block-rounded mb-3">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Payment</h3>
+
+                        <div class="block-options">
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    wire:click="addPaymentRow">
+                                + Add Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="block-content">
+
+                        @foreach($payments as $index => $payment)
+                        <div class="border rounded p-3 mb-3"
+                             wire:key="payment-{{ $index }}">
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Payment Date</label>
+                                    <input type="date"
+                                           class="form-control"
+                                           wire:model.live="payments.{{ $index }}.payment_date">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Method</label>
+                                    <select class="form-select"
+                                            wire:model.live="payments.{{ $index }}.method">
+                                        <option value="">-- Select --</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="transfer">Transfer</option>
+                                        <option value="giro">Giro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <input type="number"
+                                       class="form-control"
+                                       wire:model.live="payments.{{ $index }}.amount">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Reference</label>
+                                <input type="text"
+                                       class="form-control"
+                                       wire:model.defer="payments.{{ $index }}.reference">
+                            </div>
+
+                            <div class="text-end">
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        wire:click="removePaymentRow({{ $index }})">
+                                    Remove
+                                </button>
+                            </div>
+
+                        </div>
+                        @endforeach
+
+                    </div>
+                </div>
 
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
@@ -184,6 +250,16 @@
                             <strong>
                                 {{ number_format($this->grandTotal, 2, '.', ',') }}
                             </strong>
+                        </div>
+
+                        <div class="mb-2 d-flex justify-content-between">
+                            <span>Total Payment</span>
+                            <strong>{{ number_format($this->totalPayment, 2) }}</strong>
+                        </div>
+
+                        <div class="mb-2 d-flex justify-content-between">
+                            <span>Balance</span>
+                            <strong>{{ number_format($this->balance, 2) }}</strong>
                         </div>
 
                         <div class="mt-4">

@@ -16,6 +16,7 @@ class Create extends Component
     public $tax = 0;
 
     public $items = [];
+    public $payments = [];
 
     protected $listeners = [
         'selectProduct',
@@ -61,6 +62,33 @@ class Create extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+    }
+
+    // Payment Detail
+    public function addPaymentRow()
+    {
+        $this->payments[] = [
+            'payment_date' => now()->format('Y-m-d'),
+            'amount' => 0,
+            'method' => '',
+            'reference' => '',
+        ];
+    }
+
+    public function removePaymentRow($index)
+    {
+        unset($this->payments[$index]);
+        $this->payments = array_values($this->payments);
+    }
+
+    public function getTotalPaymentProperty()
+    {
+        return collect($this->payments)->sum('amount');
+    }
+
+    public function getBalanceProperty()
+    {
+        return $this->grandTotal - $this->totalPayment;
     }
 
     /* =========================================
@@ -127,7 +155,28 @@ class Create extends Component
             'items.*.qty' => 'required|numeric|min:1',
         ]);
 
+        foreach ($this->payments as $payment) {
+
+            if ($payment['amount'] <= 0) {
+                $this->addError('payments', 'Payment amount must be greater than zero.');
+                return;
+            }
+        }
+
+        if ($this->totalPayment > $this->grandTotal) {
+            $this->addError('payments', 'Total payment cannot exceed grand total.');
+            return;
+        }
+
         DB::transaction(function () {
+            $paidTotal = $this->totalPayment;
+            $balance   = $this->grandTotal - $paidTotal;
+
+            $status = 'posted';
+
+            if ($paidTotal > 0) {
+                $status = $balance == 0 ? 'paid' : 'partial';
+            }
 
             $purchase = Purchase::create([
                 'purchase_number' => 'PO-' . now()->format('YmdHis'),
@@ -137,9 +186,9 @@ class Create extends Component
                 'discount' => $this->discount,
                 'tax' => $this->tax,
                 'grand_total' => $this->grandTotal,
-                'paid_total' => 0,
-                'balance' => $this->grandTotal,
-                'status' => 'posted',
+                'paid_total'      => $paidTotal,
+                'balance'         => $balance,
+                'status'          => $status,
                 'notes' => $this->notes,
             ]);
 
@@ -151,6 +200,19 @@ class Create extends Component
                     'discount' => $item['discount'],
                     'total' => $item['total'],
                 ]);
+            }
+
+            foreach ($this->payments as $payment) {
+
+                if ($payment['amount'] > 0) {
+
+                    $purchase->payments()->create([
+                        'payment_date' => $payment['payment_date'],
+                        'amount'       => $payment['amount'],
+                        'method'       => $payment['method'],
+                        'reference'    => $payment['reference'],
+                    ]);
+                }
             }
         });
 

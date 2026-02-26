@@ -15,10 +15,11 @@ class Index extends Component
     public $search = '';
     public $showTable = true;
     public $deleteId;
+    public $expanded = null;
 
     public function render()
     {
-        $purchases = Purchase::with('supplier')
+        $purchases = Purchase::with('supplier', 'details.product', 'payments')
             ->where(function ($q) {
                 $q->where('purchase_number', 'like', '%' . $this->search . '%')
                   ->orWhereHas('supplier', function ($q) {
@@ -33,6 +34,11 @@ class Index extends Component
                 'title' => 'Purchase',
                 'subtitle' => 'Manage purchase transactions',
             ]);
+    }
+
+    public function toggleDetail($id)
+    {
+        $this->expanded = $this->expanded === $id ? null : $id;
     }
 
     public function updatingSearch()

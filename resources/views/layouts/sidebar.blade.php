@@ -138,6 +138,14 @@
                 <span class="nav-main-link-name">Patient</span>
             </a>
           </li>
+          <li class="nav-main-heading">Transaction</li>
+          <li class="nav-main-item">
+            <a class="nav-main-link {{ request()->routeIs('transaction.purchases') ? 'active' : '' }}"
+                href="{{ route('transaction.purchases') }}">
+                <i class="nav-main-link-icon si si-basket"></i>
+                <span class="nav-main-link-name">Purchase</span>
+            </a>
+          </li>
           <li class="nav-main-heading">Account</li>
           <li class="nav-main-item">
             <a class="nav-main-link {{ request()->routeIs('account.roles') ? 'active' : '' }}"

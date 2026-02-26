@@ -62,6 +62,14 @@
                         <tr>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-alt-secondary"
+                                            wire:click="toggleDetail({{ $p->id }})">
+                                        @if($expanded === $p->id)
+                                            <i class="fa fa-chevron-up"></i>
+                                        @else
+                                            <i class="fa fa-chevron-down"></i>
+                                        @endif
+                                    </button>
                                     <a href="{{ route('transaction.purchases.show', $p->id) }}"
                                         class="btn btn-sm btn-alt-info">
                                          <i class="fa fa-eye"></i>
@@ -115,6 +123,72 @@
                                 </small>
                             </td>
                         </tr>
+
+                        @if($expanded === $p->id)
+                            <tr>
+                                <td colspan="9" class="bg-light">
+
+                                    <div class="p-3">
+
+                                        {{-- PRODUCTS --}}
+                                        <h6 class="fw-bold">Products</h6>
+
+                                        <table class="table table-sm table-bordered mb-3">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th width="150">Qty</th>
+                                                    <th width="150">Price</th>
+                                                    <th width="150">Discount</th>
+                                                    <th width="150">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($p->details as $detail)
+                                                    <tr>
+                                                        <td>{{ $detail->product->name }}</td>
+                                                        <td>{{ $detail->qty }}</td>
+                                                        <td>{{ number_format($detail->price, 2) }}</td>
+                                                        <td>{{ number_format($detail->discount, 2) }}</td>
+                                                        <td>{{ number_format($detail->total, 2) }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+
+                                        {{-- PAYMENTS --}}
+                                        <h6 class="fw-bold">Payments</h6>
+
+                                        @if($p->payments->count())
+                                            <table class="table table-sm table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="200">Date</th>
+                                                        <th width="200">Amount</th>
+                                                        <th width="200">Method</th>
+                                                        <th>Reference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($p->payments as $payment)
+                                                        <tr>
+                                                            <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d-m-Y') }}</td>
+                                                            <td>{{ number_format($payment->amount, 2) }}</td>
+                                                            <td>{{ ucfirst($payment->method) }}</td>
+                                                            <td>{{ $payment->reference }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @else
+                                            <div class="text-muted">No payment yet.</div>
+                                        @endif
+
+                                    </div>
+
+                                </td>
+                            </tr>
+                        @endif
                     @empty
                         <tr>
                             <td colspan="9" class="text-center">No data</td>

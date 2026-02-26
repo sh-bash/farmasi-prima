@@ -18,10 +18,11 @@ class Edit extends Component
     public $tax = 0;
 
     public $items = [];
+    public $payments = [];
 
     public function mount($id)
     {
-        $this->purchase = Purchase::with('details.product')
+        $this->purchase = Purchase::with('details.product', 'payments')
             ->findOrFail($id);
 
         $this->supplier_id = $this->purchase->supplier_id;
@@ -38,6 +39,24 @@ class Edit extends Component
                 'price' => $detail->price,
                 'discount' => $detail->discount,
                 'total' => $detail->total,
+            ];
+        }
+
+        foreach ($this->purchase->payments as $payment) {
+            $this->payments[] = [
+                'payment_date' => $payment->payment_date,
+                'amount'       => $payment->amount,
+                'method'       => $payment->method,
+                'reference'    => $payment->reference,
+            ];
+        }
+
+        if (empty($this->payments)) {
+            $this->payments[] = [
+                'payment_date' => now()->format('Y-m-d'),
+                'amount'       => 0,
+                'method'       => '',
+                'reference'    => '',
             ];
         }
     }
@@ -64,6 +83,34 @@ class Edit extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+    }
+
+    public function addPaymentRow()
+    {
+        $this->payments[] = [
+            'payment_date' => now()->format('Y-m-d'),
+            'amount'       => 0,
+            'method'       => '',
+            'reference'    => '',
+        ];
+    }
+
+    public function removePaymentRow($index)
+    {
+        unset($this->payments[$index]);
+        $this->payments = array_values($this->payments);
+    }
+
+    public function getTotalPaymentProperty()
+    {
+        return collect($this->payments)->sum(function ($p) {
+            return (float) ($p['amount'] ?? 0);
+        });
+    }
+
+    public function getBalanceProperty()
+    {
+        return $this->grandTotal - $this->totalPayment;
     }
 
     /* ===============================
@@ -119,6 +166,14 @@ class Edit extends Component
         ]);
 
         DB::transaction(function () {
+            $paidTotal = $this->totalPayment;
+            $balance   = $this->grandTotal - $paidTotal;
+
+            $status = 'posted';
+
+            if ($paidTotal > 0) {
+                $status = $balance == 0 ? 'paid' : 'partial';
+            }
 
             $this->purchase->update([
                 'supplier_id' => $this->supplier_id,
@@ -127,7 +182,9 @@ class Edit extends Component
                 'discount' => $this->discount,
                 'tax' => $this->tax,
                 'grand_total' => $this->grandTotal,
-                'balance' => $this->grandTotal,
+                'paid_total' => $paidTotal,
+                'balance' => $balance,
+                'status' => $status,
                 'notes' => $this->notes,
             ]);
 
@@ -144,6 +201,21 @@ class Edit extends Component
                     'total' => $item['total'],
                 ]);
             }
+
+            $this->purchase->payments()->delete();
+
+        foreach ($this->payments as $payment) {
+
+            if ((float)$payment['amount'] > 0) {
+
+                $this->purchase->payments()->create([
+                    'payment_date' => $payment['payment_date'],
+                    'amount'       => $payment['amount'],
+                    'method'       => $payment['method'],
+                    'reference'    => $payment['reference'],
+                ]);
+            }
+        }
         });
 
         return redirect()->route('transaction.purchases');
