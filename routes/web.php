@@ -12,11 +12,17 @@ use App\Livewire\Transaction\Purchase\Create as PurchaseCreate;
 use App\Livewire\Transaction\Purchase\Edit as PurchaseEdit;
 use App\Livewire\Transaction\Purchase\Payment as PurchasePayment;
 use App\Livewire\Transaction\Purchase\Show as PurchaseShow;
+use App\Livewire\Transaction\Sale\Index as SaleIndex;
+use App\Livewire\Transaction\Sale\Create as SaleCreate;
+use App\Livewire\Transaction\Sale\Edit as SaleEdit;
+use App\Livewire\Transaction\Sale\Payment as SalePayment;
+use App\Livewire\Transaction\Sale\Show as SaleShow;
 use App\Livewire\Master\Product\KnnTest as KNNTest;
 use App\Livewire\Auth\Login as LoginComponent;
 
 use App\Http\Controllers\Api\ProductApiController as ProductAPI;
 use App\Http\Controllers\Api\SupplierApiController as SupplierAPI;
+use App\Http\Controllers\Api\PatientApiController as PatientAPI;
 
 Route::get('/', function () {
     return view('welcome');
@@ -104,6 +110,30 @@ Route::middleware(['auth'])->group(function () {
 
         });
 
+        Route::prefix('sales')->group(function () {
+
+            Route::get('/', SaleIndex::class)
+                ->middleware('permission:sales.view')
+                ->name('transaction.sales');
+
+            Route::get('/create', SaleCreate::class)
+                ->middleware('permission:sales.create')
+                ->name('transaction.sales.create');
+
+            Route::get('/edit/{id}', SaleEdit::class)
+                ->middleware('permission:sales.edit')
+                ->name('transaction.sales.edit');
+
+            Route::get('/payment/{id}', SalePayment::class)
+                ->middleware('permission:sales.create')
+                ->name('transaction.sales.payment');
+
+            Route::get('/transaction/purchases/{id}',SaleShow::class)
+                ->middleware('permission:sales.view')
+                ->name('transaction.sales.show');
+
+        });
+
     });
 
     /*
@@ -128,7 +158,6 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/knn-test', KNNTest::class)
-        ->middleware('permission:test knn')
         ->name('test.knn');
 });
 
@@ -143,8 +172,16 @@ Route::prefix('api')->group(function () {
         [ProductAPI::class, 'purchaseFind']
     )->name('api.products.purchase');
 
+    Route::get('/products/sale',
+        [ProductAPI::class, 'saleFind']
+    )->name('api.products.sale');
+
     Route::get('/suppliers/purchase',
         [SupplierAPI::class, 'purchaseFind']
     )->name('api.suppliers.purchase');
+
+    Route::get('/patients/sales',
+        [PatientAPI::class, 'saleFind']
+    )->name('api.patients.sale');
 
 });

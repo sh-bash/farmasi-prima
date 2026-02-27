@@ -74,6 +74,46 @@ class Payment extends Component
         // $this->purchase->refresh();
     }
 
+    public function deletePayment($paymentId)
+    {
+        DB::transaction(function () use ($paymentId) {
+
+            $payment = PurchasePayment::findOrFail($paymentId);
+
+            if ($payment->purchase_id !== $this->purchase->id) {
+                abort(403);
+            }
+
+            $payment->delete();
+
+            // 🔥 hitung ulang dari DB
+            $paidTotal = PurchasePayment::where(
+                'purchase_id',
+                $this->purchase->id
+            )->sum('amount');
+
+            $balance = $this->purchase->grand_total - $paidTotal;
+
+            $status = 'posted';
+            if ($paidTotal > 0) {
+                $status = $balance == 0 ? 'paid' : 'partial';
+            }
+
+            $this->purchase->update([
+                'paid_total' => $paidTotal,
+                'balance'    => $balance,
+                'status'     => $status,
+            ]);
+
+            // 🔥 update primitive property agar reactive
+            $this->paidTotal    = $paidTotal;
+            $this->balanceFinal = $balance;
+
+            // 🔥 update status di instance agar badge berubah
+            $this->purchase->status = $status;
+        });
+    }
+
     public function render()
     {
         return view('livewire.transaction.purchase.payment')

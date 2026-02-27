@@ -145,6 +145,11 @@
                 <i class="nav-main-link-icon si si-basket"></i>
                 <span class="nav-main-link-name">Purchase</span>
             </a>
+            <a class="nav-main-link {{ request()->routeIs('transaction.sales') ? 'active' : '' }}"
+                href="{{ route('transaction.sales') }}">
+                <i class="nav-main-link-icon si si-basket"></i>
+                <span class="nav-main-link-name">Sale</span>
+            </a>
           </li>
           <li class="nav-main-heading">Account</li>
           <li class="nav-main-item">

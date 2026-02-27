@@ -9,7 +9,7 @@
             <div class="block block-rounded">
                 <div class="block-header block-header-default">
                     <h3 class="block-title">
-                        Payment - {{ $purchase->purchase_number }}
+                        Payment - {{ $sale->sale_number }}
                     </h3>
                 </div>
 
@@ -17,14 +17,17 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Supplier:</strong><br>
-                            {{ $purchase->supplier->name }}
+                            <strong>Patient:</strong><br>
+                            {{ $sale->patient->name ?? '-' }}
                         </div>
 
                         <div class="col-md-6">
                             <strong>Status:</strong><br>
-                            <span class="badge bg-info">
-                                {{ ucfirst($purchase->status) }}
+                            <span class="badge bg-{{
+                                $sale->status == 'paid' ? 'success' :
+                                ($sale->status == 'partial' ? 'warning' : 'secondary')
+                            }}">
+                                {{ ucfirst($sale->status) }}
                             </span>
                         </div>
                     </div>
@@ -53,11 +56,11 @@
                             <div class="col-md-6">
                                 <label class="form-label">Method</label>
                                 <select class="form-select"
-                                        wire:model="method">
+                                        wire:model="payment_method">
                                     <option value="">-- Select --</option>
                                     <option value="cash">Cash</option>
                                     <option value="transfer">Transfer</option>
-                                    <option value="giro">Giro</option>
+                                    <option value="debit">Debit</option>
                                 </select>
                             </div>
                         </div>
@@ -73,11 +76,22 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Reference</label>
+                            <label class="form-label">Notes</label>
                             <input type="text"
                                    class="form-control"
-                                   wire:model="reference">
+                                   wire:model="notes">
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Upload Proof</label>
+                            <input type="file"
+                                   class="form-control"
+                                   wire:model="payment_proof">
+                        </div>
+
+                        @error('payment_proof')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
 
                         <button class="btn btn-success">
                             Save Payment
@@ -93,6 +107,7 @@
         {{-- RIGHT SIDE --}}
         <div class="col-lg-4">
 
+            {{-- SUMMARY --}}
             <div class="block block-rounded">
                 <div class="block-header block-header-default">
                     <h3 class="block-title">Summary</h3>
@@ -102,7 +117,7 @@
 
                     <div class="mb-2 d-flex justify-content-between">
                         <span>Grand Total</span>
-                        <strong>{{ number_format($purchase->grand_total, 2) }}</strong>
+                        <strong>{{ number_format($sale->grand_total, 2) }}</strong>
                     </div>
 
                     <div class="mb-2 d-flex justify-content-between">
@@ -112,7 +127,9 @@
 
                     <div class="mb-2 d-flex justify-content-between">
                         <span>Balance</span>
-                        <strong>{{ number_format($balanceFinal, 2) }}</strong>
+                        <strong class="{{ $balanceFinal > 0 ? 'text-danger' : 'text-success' }}">
+                            {{ number_format($balanceFinal, 2) }}
+                        </strong>
                     </div>
 
                 </div>
@@ -126,9 +143,9 @@
 
                 <div class="block-content">
 
-                    @forelse($purchase->payments as $payment)
+                    @forelse($sale->payments as $payment)
                         <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-start"
-                                wire:key="payment-history-{{ $payment->id }}">
+                             wire:key="payment-history-{{ $payment->id }}">
 
                             {{-- LEFT CONTENT --}}
                             <div>
@@ -138,23 +155,34 @@
 
                                 <small class="text-muted d-block">
                                     {{ \Carbon\Carbon::parse($payment->payment_date)->format('d-m-Y') }}
-                                    • {{ ucfirst($payment->method) }}
+                                    • {{ ucfirst($payment->payment_method) }}
                                 </small>
 
-                                @if($payment->reference)
+                                @if($payment->notes)
                                     <small class="text-muted">
-                                        Ref: {{ $payment->reference }}
+                                        {{ $payment->notes }}
                                     </small>
                                 @endif
                             </div>
 
-                            {{-- RIGHT BUTTON --}}
+                            {{-- DELETE BUTTON --}}
                             <div>
                                 <button class="btn btn-sm btn-alt-danger"
                                         wire:click="deletePayment({{ $payment->id }})"
                                         wire:loading.attr="disabled">
                                     <i class="fa fa-trash"></i>
                                 </button>
+
+                                @if($payment->payment_proof)
+                                    <div class="mt-2">
+                                        <a href="#"
+                                            class="text-info fs-5"
+                                            wire:click.prevent="previewProof('{{ $payment->payment_proof }}')"
+                                            title="View Payment Proof">
+                                                <i class="fa fa-eye"></i>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
 
                         </div>
@@ -171,4 +199,58 @@
 
     </div>
 
+    <div wire:ignore.self class="modal fade" id="proofModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Proof</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+
+                    @if($previewProofPath)
+
+                        @php
+                            $extension = pathinfo($previewProofPath, PATHINFO_EXTENSION);
+                        @endphp
+
+                        {{-- IMAGE --}}
+                        @if(in_array(strtolower($extension), ['jpg','jpeg','png']))
+                            <img src="{{ asset('storage/' . $previewProofPath) }}"
+                                 class="img-fluid rounded shadow">
+                        @endif
+
+                        {{-- PDF --}}
+                        @if(strtolower($extension) === 'pdf')
+                            <iframe src="{{ asset('storage/' . $previewProofPath) }}"
+                                    width="100%"
+                                    height="500px"></iframe>
+                        @endif
+
+                    @endif
+
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+
+document.addEventListener('livewire:init', () => {
+
+    Livewire.on('open-proof-modal', () => {
+        let modal = new bootstrap.Modal(
+            document.getElementById('proofModal')
+        );
+        modal.show();
+    });
+
+});
+
+</script>
+@endpush
