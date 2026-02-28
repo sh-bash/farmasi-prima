@@ -222,7 +222,7 @@ class Create extends Component
             text: 'Purchase created successfully'
         );
 
-        return redirect()->route('transaction.purchases');
+        return redirect()->route('transaction.sales.index');
     }
 
     /* =========================================

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Transaction\Sale;
 
+use App\Models\User;
+use App\Notifications\SaleOrderNotification;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction\Sale;
@@ -256,6 +258,7 @@ class Edit extends Component
             $paidTotal = $this->totalPayment;
             $balance   = $this->grandTotal - $paidTotal;
 
+            $oldStatus = $this->sale->status;
             $status = 'posted';
 
             if ($paidTotal > 0) {
@@ -330,10 +333,45 @@ class Edit extends Component
                         'payment_proof'  => $proofPath,
                     ]);
                 }
+
+                $newStatus = $status; // status yang sudah dihitung
+
+                // 1️⃣ Jika berubah ke partial
+                if ($oldStatus !== 'partial' && $newStatus === 'partial') {
+
+                    $this->notifyAdmins(
+                        $this->sale,
+                        "Order {$this->sale->sale_number} menjadi Partial oleh " . auth()->user()->name
+                    );
+
+                    $this->dispatch('refresh-notification');
+                    $this->dispatch('play-sound');
+                }
+
+                // 2️⃣ Jika berubah ke paid
+                if ($oldStatus !== 'paid' && $newStatus === 'paid') {
+
+                    $this->notifyAdmins(
+                        $this->sale,
+                        "Order {$this->sale->sale_number} telah dilunasi oleh " . auth()->user()->name
+                    );
+
+                    $this->dispatch('refresh-notification');
+                    $this->dispatch('play-sound');
+                }
             }
         });
 
-        return redirect()->route('transaction.sales');
+        return redirect()->route('transaction.sales.index');
+    }
+
+    protected function notifyAdmins($sale, $message)
+    {
+        $admins = User::role('admin')->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new SaleOrderNotification($sale, $message));
+        }
     }
 
     public function previewProof($path)

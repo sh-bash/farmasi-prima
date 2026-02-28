@@ -39,6 +39,9 @@ use App\Livewire\Report\Receivable\Detail as ReceivableDetail;
 use App\Livewire\Report\Payable\Index as PayableIndex;
 use App\Livewire\Report\Payable\Detail as PayableDetail;
 
+use App\Livewire\Dashboard\Index as DashboardIndex;
+use App\Livewire\Notification\Index as NotificationIndex;
+
 use App\Livewire\Master\Product\KnnTest as KNNTest;
 
 /*
@@ -50,14 +53,6 @@ use App\Livewire\Master\Product\KnnTest as KNNTest;
 use App\Http\Controllers\Api\ProductApiController as ProductAPI;
 use App\Http\Controllers\Api\SupplierApiController as SupplierAPI;
 use App\Http\Controllers\Api\PatientApiController as PatientAPI;
-
-/*
-|--------------------------------------------------------------------------
-| PUBLIC
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/', fn () => view('welcome'));
 
 /*
 |--------------------------------------------------------------------------
@@ -142,14 +137,31 @@ Route::middleware('auth')->group(function () {
         Route::get('/payable/{supplierId}', PayableDetail::class)->middleware('permission:purchase.view')->name('payable.detail');
     });
 
+    // Dashboard
+    Route::get('/', DashboardIndex::class)->name('dashboard');
+    Route::post('/notification/read/{id}', function ($id) {
+
+        $notification = auth()->user()
+            ->notifications()
+            ->find($id);
+
+        if ($notification) {
+            $notification->markAsRead();
+        }
+
+        return response()->json(['success' => true]);
+
+    })->name('notification.read')->middleware('auth');
+    Route::get('/notifications', NotificationIndex::class)->name('notifications');
+
     /*
     |--------------------------------------------------------------------------
     | ACCOUNT
     |--------------------------------------------------------------------------
     */
     Route::prefix('account')->name('account.')->group(function () {
-        Route::get('/roles', RoleIndex::class)->middleware('permission:view role')->name('roles');
-        Route::get('/users', UserIndex::class)->middleware('permission:view user')->name('users');
+        Route::get('/roles', RoleIndex::class)->middleware('permission:user.view')->name('roles');
+        Route::get('/users', UserIndex::class)->middleware('permission:user.view')->name('users');
     });
 
     /*

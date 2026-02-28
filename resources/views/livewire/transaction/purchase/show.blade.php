@@ -120,7 +120,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ route('transaction.purchases') }}"
+                        <a href="{{ route('transaction.sales.index') }}"
                            class="btn btn-secondary w-100">
                             Back
                         </a>

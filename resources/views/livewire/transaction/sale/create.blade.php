@@ -198,7 +198,7 @@
                             <div class="mb-2">
                                 <label>Method</label>
                                 <select class="form-select"
-                                        wire:model="payments.{{ $index }}.method">
+                                        wire:model.live="payments.{{ $index }}.method">
                                     <option value="">-- Select --</option>
                                     <option value="cash">Cash</option>
                                     <option value="transfer">Transfer</option>
@@ -336,12 +336,7 @@ function initPatient(){
             processResults: data => data
         }
     }).on('select2:select', function(e){
-
-        let component = Livewire.find(
-            document.querySelector('[wire\\:id]').getAttribute('wire:id')
-        );
-
-        component.set('patient_id', e.params.data.id);
+        @this.set('patient_id', e.params.data.id);
     });
 }
 
@@ -371,11 +366,7 @@ function initProducts(){
 
         $(el).on('select2:select', function(e){
 
-            let component = Livewire.find(
-                document.querySelector('[wire\\:id]').getAttribute('wire:id')
-            );
-
-            component.call('selectProduct', {
+            @this.call('selectProduct', {
                 index: index,
                 text: e.params.data.text,
                 id: e.params.data.id,

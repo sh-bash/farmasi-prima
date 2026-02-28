@@ -218,7 +218,7 @@ class Edit extends Component
         }
         });
 
-        return redirect()->route('transaction.purchases');
+        return redirect()->route('transaction.sales.index');
     }
 
     public function render()

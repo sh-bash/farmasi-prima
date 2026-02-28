@@ -307,9 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }).on('select2:select', function(e){
 
-        Livewire.find(
-            document.querySelector('[wire\\:id]').getAttribute('wire:id')
-        ).set('supplier_id', e.params.data.id);
+        @this.set('supplier_id', e.params.data.id);
 
     });
 
@@ -340,11 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            const component = Livewire.find(
-                document.querySelector('[wire\\:id]').getAttribute('wire:id')
-            );
-
-            let items = component.get('items');
+            let items = @this.get('items');
 
             $('.select-product').each(function(){
 
@@ -406,9 +400,7 @@ function initProducts() {
 
         $(el).on('select2:select', function(e){
 
-            Livewire.find(
-                document.querySelector('[wire\\:id]').getAttribute('wire:id')
-            ).call('selectProduct', {
+            @this.call('selectProduct', {
                 index: index,
                 text: e.params.data.text,
                 id: e.params.data.id,

@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Transaction\Sale;
 
+use App\Models\User;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction\Sale;
+use App\Notifications\SaleOrderNotification;
 use Livewire\WithFileUploads;
 use App\Helpers\StockHelper;
 
@@ -323,11 +325,12 @@ class Create extends Component
             }
 
             if ($isBpjs) {
+                $status = 'paid';
 
                 $sale->update([
                     'paid_total' => $sale->grand_total,
                     'balance'    => 0,
-                    'status'     => 'paid',
+                    'status'     => $status,
                 ]);
 
             } else {
@@ -341,6 +344,35 @@ class Create extends Component
                     'status'     => $balance <= 0 ? 'paid' : ($paidTotal > 0 ? 'partial' : 'posted'),
                 ]);
             }
+
+            // Jika langsung paid
+            if ($status === 'paid') {
+
+                $this->notifyAdmins(
+                    $sale,
+                    "Order {$sale->sale_number} dibuat dan langsung lunas oleh " . auth()->user()->name
+                );
+            }
+
+            // Jika partial saat dibuat
+            if ($status === 'partial') {
+
+                $this->notifyAdmins(
+                    $sale,
+                    "Order {$sale->sale_number} dibuat (Partial) oleh " . auth()->user()->name
+                );
+            }
+
+            if ($status === 'posted') {
+
+                $this->notifyAdmins(
+                    $sale,
+                    "Order {$sale->sale_number} dibuat (Posted) oleh " . auth()->user()->name
+                );
+            }
+
+            $this->dispatch('refresh-notification');
+            $this->dispatch('play-sound');
         });
 
         $this->dispatch('swal',
@@ -349,7 +381,16 @@ class Create extends Component
             text: 'Sale created successfully'
         );
 
-        return redirect()->route('transaction.sales');
+        return redirect()->route('transaction.sales.index');
+    }
+
+    protected function notifyAdmins($sale, $message)
+    {
+        $admins = User::role('admin')->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new SaleOrderNotification($sale, $message));
+        }
     }
 
     /* =========================================

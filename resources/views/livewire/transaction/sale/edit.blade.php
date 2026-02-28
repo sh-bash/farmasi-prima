@@ -393,11 +393,7 @@ function initPatient(){
         }
     }).on('select2:select', function(e){
 
-        let component = Livewire.find(
-            document.querySelector('[wire\\:id]').getAttribute('wire:id')
-        );
-
-        component.set('patient_id', e.params.data.id);
+        @this.set('patient_id', e.params.data.id);
     });
 }
 
@@ -409,11 +405,7 @@ function preloadData(){
 
     setTimeout(function(){
 
-        let component = Livewire.find(
-            document.querySelector('[wire\\:id]').getAttribute('wire:id')
-        );
-
-        let patientId = component.get('patient_id');
+        let patientId = @this.get('patient_id');
 
         /* --------- PRELOAD PATIENT --------- */
         if (patientId) {
@@ -443,7 +435,7 @@ function preloadData(){
         }
 
         /* --------- PRELOAD PRODUCTS --------- */
-        let items = component.get('items');
+        let items = @this.get('items');
 
         $('.select-product').each(function(){
 
@@ -506,11 +498,7 @@ function initProducts(){
 
         $(el).on('select2:select', function(e){
 
-            let component = Livewire.find(
-                document.querySelector('[wire\\:id]').getAttribute('wire:id')
-            );
-
-            component.call('selectProduct', {
+            @this.call('selectProduct', {
                 index: index,
                 text: e.params.data.text,
                 id: e.params.data.id,

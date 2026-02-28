@@ -22,7 +22,47 @@
         let loader = document.getElementById('global-loading');
         let counter = 0;
 
-        Livewire.hook('request', ({ respond, succeed, fail }) => {
+        Livewire.hook('request', (request) => {
+
+            let isNotificationPoll = false;
+
+            try {
+                // 🔥 payload adalah STRING
+                let body = JSON.parse(request.payload);
+
+                let component = body?.components?.[0];
+
+                if (component) {
+
+                    // Parse snapshot untuk ambil nama component
+                    let snapshot = JSON.parse(component.snapshot);
+                    let componentName = snapshot?.memo?.name;
+
+                    // Cek apakah ini notification dropdown
+                    if (componentName === 'layout.notification-dropdown') {
+
+                        // Pastikan ini polling ($refresh)
+                        let calls = component?.calls ?? [];
+
+                        let isPoll = calls.some(call =>
+                            call.method === '$refresh'
+                            && call.metadata?.type === 'poll'
+                        );
+
+                        if (isPoll) {
+                            isNotificationPoll = true;
+                        }
+                    }
+                }
+
+            } catch (e) {
+                console.warn('Livewire parse error:', e);
+            }
+
+            // 🚫 Skip loader hanya untuk polling notification
+            if (isNotificationPoll) {
+                return;
+            }
 
             counter++;
             loader.style.display = 'flex';
@@ -34,10 +74,11 @@
                 }
             };
 
-            respond(done);
-            succeed(done);
-            fail(done);
+            request.respond(done);
+            request.succeed(done);
+            request.fail(done);
         });
+
 
     });
 </script>
@@ -71,6 +112,25 @@ document.addEventListener('livewire:init', () => {
     });
 
 });
+</script>
+
+<script>
+    function markNotificationRead(id) {
+
+        fetch('/notification/read/' + id, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+
+    }
+</script>
+
+<script>
+    window.addEventListener('play-sound', () => {
+        new Audio('/notification.mp3').play();
+    });
 </script>
 
 @stack('scripts')

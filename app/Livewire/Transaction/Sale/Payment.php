@@ -3,6 +3,8 @@
 namespace App\Livewire\Transaction\Sale;
 
 use App\Models\Transaction\SalePayment;
+use App\Models\User;
+use App\Notifications\SaleOrderNotification;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Transaction\Sale;
@@ -72,7 +74,7 @@ class Payment extends Component
         }
 
         DB::transaction(function () {
-
+            $oldStatus = $this->sale->status;
             $proofPath = null;
 
             if ($this->payment_proof) {
@@ -100,11 +102,46 @@ class Payment extends Component
 
             $this->paidTotal    = $paidTotal;
             $this->balanceFinal = $balance;
+
+            // Jika status berubah
+            if ($oldStatus !== $status) {
+
+                if ($status === 'partial') {
+
+                    $this->notifyAdmins(
+                        $this->sale,
+                        "Order {$this->sale->sale_number} dibayar sebagian oleh " . auth()->user()->name
+                    );
+
+                    $this->dispatch('refresh-notification');
+                    $this->dispatch('play-sound');
+                }
+
+                if ($status === 'paid') {
+
+                    $this->notifyAdmins(
+                        $this->sale,
+                        "Order {$this->sale->sale_number} telah dilunasi oleh " . auth()->user()->name
+                    );
+
+                    $this->dispatch('refresh-notification');
+                    $this->dispatch('play-sound');
+                }
+            }
         });
 
         $this->reset(['amount', 'payment_method', 'notes', 'payment_proof']);
 
         $this->sale = Sale::find($this->sale->id);
+    }
+
+    protected function notifyAdmins($sale, $message)
+    {
+        $admins = User::role('admin')->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new SaleOrderNotification($sale, $message));
+        }
     }
 
     public function deletePayment($paymentId)
