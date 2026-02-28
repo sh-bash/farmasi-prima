@@ -23,6 +23,8 @@ use App\Livewire\Transaction\Sale\Show as SaleShow;
 
 use App\Livewire\Report\Purchase\Index as PurchaseReportIndex;
 use App\Livewire\Report\Sale\Index as SaleReportIndex;
+use App\Livewire\Report\Stock\Index as StockIndex;
+use App\Livewire\Report\Stock\Detail as StockDetail;
 
 use App\Livewire\Master\Product\KnnTest as KNNTest;
 use App\Livewire\Auth\Login as LoginComponent;
@@ -147,6 +149,14 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/sale', SaleReportIndex::class)
                 ->middleware('permission:sales.view')
                 ->name('report.sale');
+
+            Route::get('/stock', StockIndex::class)
+                ->middleware('permission:product.view')
+                ->name('report.stock');
+
+            Route::get('/stock/detail/{productId}',
+                StockDetail::class
+            )->name('report.stock.detail');
         });
     });
 

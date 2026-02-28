@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction\Sale;
 use Livewire\WithFileUploads;
+use App\Helpers\StockHelper;
 
 
 class Create extends Component
@@ -20,6 +21,7 @@ class Create extends Component
 
     public $items = [];
     public $payments = [];
+    public $stockAvailable = [];
 
 
     protected $listeners = [
@@ -109,7 +111,13 @@ class Create extends Component
 
         $this->items[$index]['product_id'] = $data['id'];
         $this->items[$index]['product_name'] = $data['text'];
-        $this->items[$index]['price'] = $data['price'] ?? 0;
+        $this->items[$index]['price'] = $data['price'];
+        $this->items[$index]['qty'] = 1;
+        $this->items[$index]['discount'] = 0;
+
+        // Ambil stock
+        $stock = StockHelper::getCurrentStock($data['id']);
+        $this->stockAvailable[$index] = $stock < 0 ? 0 : $stock;
 
         $this->recalculateRow($index);
     }
@@ -130,13 +138,26 @@ class Create extends Component
 
     public function recalculateRow($index)
     {
-        $qty = floatval($this->items[$index]['qty'] ?? 0);
-        $price = floatval($this->items[$index]['price'] ?? 0);
-        $discount = floatval($this->items[$index]['discount'] ?? 0);
+        $qty = (int) ($this->items[$index]['qty'] ?? 0);
+        $price = (float) ($this->items[$index]['price'] ?? 0);
+        $discount = (float) ($this->items[$index]['discount'] ?? 0);
 
-        $total = ($qty * $price) - $discount;
+        $available = $this->stockAvailable[$index] ?? 0;
 
-        $this->items[$index]['total'] = max($total, 0);
+        // VALIDASI STOCK REALTIME
+        if ($qty > $available) {
+
+            $this->dispatch('swal',
+                icon: 'error',
+                title: 'Stock Not Enough',
+                text: 'Available stock: ' . $available
+            );
+
+            $this->items[$index]['qty'] = $available < 0 ? 0 : $available;
+            $qty = $available;
+        }
+
+        $this->items[$index]['total'] = ($qty * $price) - $discount;
     }
 
     public function getSubtotalProperty()
@@ -203,6 +224,22 @@ class Create extends Component
                     title: 'Validation Failed',
                     text: 'kebanyakan bos, kita gk butuh sedekah'
                 );
+                return;
+            }
+        }
+
+        foreach ($this->items as $index => $item) {
+
+            $currentStock = StockHelper::getCurrentStock($item['product_id']);
+
+            if ($item['qty'] > $currentStock) {
+
+                $this->dispatch('swal',
+                    icon: 'error',
+                    title: 'Stock Validation Failed',
+                    text: 'Product stock has changed. Available: ' . $currentStock
+                );
+
                 return;
             }
         }

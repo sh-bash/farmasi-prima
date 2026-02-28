@@ -87,12 +87,31 @@
                                         <div class="row g-3 align-items-end">
 
                                             <div class="col-md-2">
-                                                <label>Qty</label>
+
+                                                @php
+                                                    $stock = $stockAvailable[$index] ?? 0;
+                                                    $badgeClass = $stock <= 0
+                                                        ? 'bg-danger'
+                                                        : ($stock <= 5 ? 'bg-warning text-dark' : 'bg-success');
+                                                @endphp
+
+                                                <label class="form-label">
+                                                    Qty <span class="badge {{ $badgeClass }}">
+                                                        Stock: {{ number_format($stock) }}
+                                                    </span>
+                                                </label>
+
                                                 <input type="number"
-                                                       class="form-control"
-                                                       wire:model="items.{{ $index }}.qty"
-                                                       wire:change="recalculateRow({{ $index }})"
-                                                       min="1">
+                                                        class="form-control"
+                                                        wire:model="items.{{ $index }}.qty"
+                                                        wire:change="recalculateRow({{ $index }})"
+                                                        min="1"
+                                                        {{ $stock <= 0 ? 'disabled' : '' }}>
+
+                                                <div class="mt-2">
+
+                                                </div>
+
                                             </div>
 
                                             <div class="col-md-3">

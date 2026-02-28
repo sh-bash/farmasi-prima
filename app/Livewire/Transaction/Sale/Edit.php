@@ -5,6 +5,7 @@ namespace App\Livewire\Transaction\Sale;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction\Sale;
+use App\Helpers\StockHelper;
 use Livewire\WithFileUploads;
 
 
@@ -23,6 +24,8 @@ class Edit extends Component
     public $items = [];
     public $payments = [];
     public $previewProofPath = null;
+    public $stockAvailable = [];
+    public $originalItems = [];
 
     public function mount($id)
     {
@@ -37,8 +40,8 @@ class Edit extends Component
         $this->discount   = $this->sale->discount;
         $this->tax        = $this->sale->tax;
 
-        foreach ($this->sale->details as $detail) {
-            $this->items[] = [
+        foreach ($this->sale->details as $index => $detail) {
+            $this->items[$index] = [
                 'product_id'   => $detail->product_id,
                 'product_name' => $detail->product->name,
                 'qty'          => $detail->qty,
@@ -46,6 +49,18 @@ class Edit extends Component
                 'discount'     => $detail->discount,
                 'total'        => $detail->total,
             ];
+
+            // simpan qty lama
+            $this->originalItems[$index] = $detail->qty;
+
+            // ambil current stock
+            $currentStock = StockHelper::getCurrentStock($detail->product_id);
+
+            // stock available = current stock + qty lama
+            $this->stockAvailable[$index] = max(
+                0,
+                $currentStock + $detail->qty
+            );
         }
 
         foreach ($this->sale->payments as $payment) {
@@ -91,7 +106,12 @@ class Edit extends Component
     public function removeRow($index)
     {
         unset($this->items[$index]);
+        unset($this->stockAvailable[$index]);
+        unset($this->originalItems[$index]);
+
         $this->items = array_values($this->items);
+        $this->stockAvailable = array_values($this->stockAvailable);
+        $this->originalItems = array_values($this->originalItems);
     }
 
     public function addPaymentRow()
@@ -135,6 +155,13 @@ class Edit extends Component
         $this->items[$index]['product_name'] = $data['text'];
         $this->items[$index]['price']        = (float) $data['price'];
 
+        // reset original qty karena ganti product
+        $this->originalItems[$index] = 0;
+
+        // Ambil stock
+        $stock = StockHelper::getCurrentStock($data['id']);
+        $this->stockAvailable[$index] = $stock < 0 ? 0 : $stock;
+
         $this->recalculateRow($index);
     }
 
@@ -147,6 +174,20 @@ class Edit extends Component
         $qty      = (float) ($this->items[$index]['qty'] ?? 0);
         $price    = (float) ($this->items[$index]['price'] ?? 0);
         $discount = (float) ($this->items[$index]['discount'] ?? 0);
+
+        $available = $this->stockAvailable[$index] ?? 0;
+
+        if ($qty > $available) {
+
+            $this->dispatch('swal',
+                icon: 'error',
+                title: 'Stock Not Enough',
+                text: 'Available stock: ' . $available
+            );
+
+            $this->items[$index]['qty'] = $available < 0 ? 0 : $available;
+            $qty = $available;
+        }
 
         $this->items[$index]['total'] = ($qty * $price) - $discount;
     }
@@ -188,6 +229,26 @@ class Edit extends Component
             );
 
             return; // ⬅ STOP TOTAL METHOD
+        }
+
+        foreach ($this->items as $index => $item) {
+
+            $currentStock = StockHelper::getCurrentStock($item['product_id']);
+
+            $originalQty = $this->originalItems[$index] ?? 0;
+
+            $available = $currentStock + $originalQty;
+
+            if ($item['qty'] > $available) {
+
+                $this->dispatch('swal',
+                    icon: 'error',
+                    title: 'Stock Validation Failed',
+                    text: 'Stock has changed. Available: ' . $available
+                );
+
+                return;
+            }
         }
 
         DB::transaction(function () {

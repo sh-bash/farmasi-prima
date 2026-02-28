@@ -153,9 +153,14 @@
           </li>
           <li class="nav-main-heading">Report</li>
           <li class="nav-main-item">
+            <a class="nav-main-link {{ request()->routeIs('report.stock*') ? 'active' : '' }}"
+                href="{{ route('report.stock') }}">
+                <i class="nav-main-link-icon si si-layers"></i>
+                <span class="nav-main-link-name">Stock</span>
+            </a>
             <a class="nav-main-link {{ request()->routeIs('report.purchase') ? 'active' : '' }}"
                 href="{{ route('report.purchase') }}">
-                <i class="nav-main-link-icon si si si-chart"></i>
+                <i class="nav-main-link-icon si si-chart"></i>
                 <span class="nav-main-link-name">Purchase</span>
             </a>
             <a class="nav-main-link {{ request()->routeIs('report.sale') ? 'active' : '' }}"

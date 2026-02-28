@@ -89,9 +89,19 @@
 
                                         {{-- DETAIL --}}
                                         <div class="row g-3 align-items-end">
+                                            @php
+                                                $stock = $stockAvailable[$index] ?? 0;
+                                                $badgeClass = $stock <= 0
+                                                    ? 'bg-danger'
+                                                    : ($stock <= 5 ? 'bg-warning text-dark' : 'bg-success');
+                                            @endphp
 
                                             <div class="col-md-2">
-                                                <label class="form-label">Qty</label>
+                                                <label class="form-label">Qty
+                                                    <span class="badge {{ $badgeClass }}">
+                                                        Stock: {{ number_format($stock) }}
+                                                    </span>
+                                                </label>
                                                 <input type="number"
                                                        class="form-control"
                                                        wire:model="items.{{ $index }}.qty"
