@@ -18,10 +18,12 @@
                     <div class="block-content">
 
                         {{-- Patient --}}
-                        <div class="mb-3" wire:ignore>
-                            <label class="form-label">Patient</label>
-                            <select id="patient-select" class="form-select"></select>
-                        </div>
+                        @if(!$isPatient)
+                            <div class="mb-3" wire:ignore>
+                                <label class="form-label">Patient</label>
+                                <select id="patient-select" class="form-select"></select>
+                            </div>
+                        @endif
 
                         {{-- Date --}}
                         <div class="mb-3">

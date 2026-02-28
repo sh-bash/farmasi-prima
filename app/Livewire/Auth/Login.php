@@ -25,7 +25,7 @@ class Login extends Component
         ])) {
 
             session()->regenerate();
-            return redirect()->route('master.products');
+            return redirect()->route('dashboard');
         }
 
         $this->addError('email', 'Email atau password salah');

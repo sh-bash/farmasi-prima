@@ -3,6 +3,10 @@
 namespace App\Livewire\Master\Patient;
 
 use App\Models\Master\Patient;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -77,26 +81,91 @@ class Index extends Component
     {
         $this->validate();
 
-        Patient::updateOrCreate(
-            ['id' => $this->patientId],
-            [
-                'medical_record_number' => $this->medical_record_number,
-                'name' => $this->name,
-                'gender' => $this->gender,
-                'phone' => $this->phone,
-                'address' => $this->address,
-                'birth_date' => $this->birth_date,
-            ]
-        );
+        DB::beginTransaction();
 
-        $this->resetForm();
-        $this->showForm = false;
+        try {
 
-        $this->dispatch('swal',
-            icon: 'success',
-            title: 'Success',
-            text: 'Patient saved successfully'
-        );
+            // ================================
+            // EDIT MODE
+            // ================================
+            if ($this->patientId) {
+
+                $patient = Patient::findOrFail($this->patientId);
+
+                $patient->update([
+                    'medical_record_number' => $this->medical_record_number,
+                    'name' => $this->name,
+                    'gender' => $this->gender,
+                    'phone' => $this->phone,
+                    'address' => $this->address,
+                    'birth_date' => $this->birth_date,
+                ]);
+
+                // Optional: update name di user juga
+                if ($patient->user) {
+                    $patient->user->update([
+                        'name' => $this->name,
+                    ]);
+                }
+
+            }
+            // ================================
+            // CREATE MODE
+            // ================================
+            else {
+
+                // generate email otomatis kalau tidak ada
+                $email = $this->phone . '@primahusada.com';
+
+                // cek kalau sudah ada user dg email tsb
+                $existingUser = User::where('email', $email)->first();
+
+                if ($existingUser) {
+                    throw new \Exception('User dengan nomor ini sudah ada.');
+                }
+
+                // 1️⃣ create user
+                $user = User::create([
+                    'name' => $this->name,
+                    'email' => $email,
+                    'password' => Hash::make('12345678'),
+                ]);
+
+                $user->assignRole('patient');
+
+                // 2️⃣ create patient
+                Patient::create([
+                    'medical_record_number' => $this->medical_record_number,
+                    'name' => $this->name,
+                    'gender' => $this->gender,
+                    'phone' => $this->phone,
+                    'address' => $this->address,
+                    'birth_date' => $this->birth_date,
+                    'user_id' => $user->id,
+                ]);
+            }
+
+            DB::commit();
+
+            $this->resetForm();
+            $this->showForm = false;
+
+            $this->dispatch('swal',
+                icon: 'success',
+                title: 'Success',
+                text: 'Patient saved successfully'
+            );
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('swal',
+                icon: 'error',
+                title: 'Error',
+                text: $e->getMessage()
+            );
+        }
     }
 
     public function edit($id)

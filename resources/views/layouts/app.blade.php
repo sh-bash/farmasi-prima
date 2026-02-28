@@ -22,11 +22,22 @@
   </head>
 
   <body>
-    <div id="page-container" class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed main-content-narrow">
+    @php
+        $isPatient = auth()->check() && auth()->user()->hasRole('patient');
+    @endphp
 
-      @include('layouts.side-overlay')
-      @include('layouts.sidebar')
-      @include('layouts.page-header')
+    <div id="page-container"
+        class="{{ $isPatient
+                    ? 'enable-page-overlay side-scroll page-header-fixed'
+                    : 'sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed main-content-narrow' }}">
+
+        @include('layouts.side-overlay')
+
+        @if(!$isPatient)
+            @include('layouts.sidebar')
+        @endif
+
+        @include('layouts.page-header')
 
       <!-- Main Container -->
       <main id="main-container">

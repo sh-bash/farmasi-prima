@@ -76,25 +76,30 @@
                                         <i class="fa fa-eye"></i>
                                     </a>
 
-                                    @if($s->status !== 'paid')
-                                        <a href="{{ route('transaction.sales.edit', $s->id) }}"
-                                           class="btn btn-sm btn-alt-warning"
-                                           title="Edit">
-                                            <i class="fa fa-pencil-alt"></i>
-                                        </a>
 
-                                        <a href="{{ route('transaction.sales.payment', $s->id) }}"
-                                           class="btn btn-sm btn-alt-info"
-                                           title="Payment">
-                                            <i class="fa fa-money-bill"></i>
-                                        </a>
-                                    @endif
+                                        @if($s->status !== 'paid')
+                                            @role('admin')
+                                                <a href="{{ route('transaction.sales.edit', $s->id) }}"
+                                                class="btn btn-sm btn-alt-warning"
+                                                title="Edit">
+                                                    <i class="fa fa-pencil-alt"></i>
+                                                </a>
+                                            @endrole
 
-                                    <button class="btn btn-sm btn-alt-danger"
-                                            wire:click="confirmDelete({{ $s->id }})"
-                                            title="Delete">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                            <a href="{{ route('transaction.sales.payment', $s->id) }}"
+                                            class="btn btn-sm btn-alt-info"
+                                            title="Payment">
+                                                <i class="fa fa-money-bill"></i>
+                                            </a>
+                                        @endif
+
+                                    @role('admin')
+                                        <button class="btn btn-sm btn-alt-danger"
+                                                wire:click="confirmDelete({{ $s->id }})"
+                                                title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    @endrole
                                 </div>
                             </td>
 

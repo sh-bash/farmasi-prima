@@ -24,6 +24,7 @@ class Create extends Component
     public $items = [];
     public $payments = [];
     public $stockAvailable = [];
+    public $isPatient = false;
 
 
     protected $listeners = [
@@ -38,6 +39,16 @@ class Create extends Component
     public function mount()
     {
         $this->sale_date = now()->format('Y-m-d');
+
+        $user = auth()->user();
+
+        if ($user->hasRole('patient')) {
+
+            $this->isPatient = true;
+
+            // 🔥 langsung set patient_id milik user login
+            $this->patient_id = $user->patient?->id;
+        }
     }
 
     /* =========================================
@@ -195,13 +206,29 @@ class Create extends Component
     public function save()
     {
 
-        $this->validate([
-            'patient_id' => 'required',
+        $user = auth()->user();
+
+        // 🔐 Force patient_id jika login sebagai patient
+        if ($user->hasRole('patient')) {
+            $this->patient_id = $user->patient?->id;
+        }
+
+        // =========================
+        // Dynamic Validation
+        // =========================
+        $rules = [
             'sale_date' => 'required|date',
             'items.*.product_id' => 'required',
             'items.*.qty' => 'required|numeric|min:1',
             'payments.*.payment_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:4096',
-        ]);
+        ];
+
+        // hanya admin/staff wajib pilih patient
+        if (!$user->hasRole('patient')) {
+            $rules['patient_id'] = 'required';
+        }
+
+        $this->validate($rules);
 
         $isBpjs = collect($this->payments)
             ->contains(fn($p) => $p['method'] === 'bpjs');
@@ -247,6 +274,9 @@ class Create extends Component
         }
 
         DB::transaction(function () {
+            if (auth()->user()->hasRole('patient')) {
+                $this->patient_id = auth()->user()->patient?->id;
+            }
 
             $paidTotal = $this->totalPayment;
             $balance   = $this->grandTotal - $paidTotal;

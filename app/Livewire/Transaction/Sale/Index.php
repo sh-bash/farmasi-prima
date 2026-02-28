@@ -19,13 +19,22 @@ class Index extends Component
 
     public function render()
     {
-        $sales = Sale::with('patient', 'details.product', 'payments')
+        $user = auth()->user();
+
+        $query = Sale::with('patient', 'details.product', 'payments')
             ->where(function ($q) {
                 $q->where('sale_number', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('patient', function ($q) {
-                      $q->where('name', 'like', '%' . $this->search . '%');
-                  });
-            })
+                ->orWhereHas('patient', function ($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%');
+                });
+            });
+
+        // 🔐 Jika login sebagai patient → hanya order miliknya
+        if ($user->hasRole('patient')) {
+            $query->where('patient_id', $user->patient?->id);
+        }
+
+        $sales = $query
             ->latest()
             ->paginate(10);
 

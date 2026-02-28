@@ -7,19 +7,50 @@ use Illuminate\Support\Facades\DB;
 
 class Index extends Component
 {
+    public $isPatient = false;
+
+    // Admin Data
     public $pendingOrders;
     public $newPatients;
     public $totalOrders;
     public $outOfStockProducts;
-
     public $totalSales;
     public $totalPurchases;
     public $totalReceivable;
     public $totalPayable;
 
+    // Patient Data
+    public $patientOutstanding = 0;
+    public $patientTotalOrders = 0;
+
     public function mount()
     {
-        // Top Cards
+        $user = auth()->user();
+
+        // =========================
+        // PATIENT DASHBOARD
+        // =========================
+        if ($user->hasRole('patient')) {
+
+            $this->isPatient = true;
+
+            $patient = $user->patient;
+
+            $this->patientOutstanding = DB::table('sales')
+                ->where('patient_id', $patient->id)
+                ->sum('balance');
+
+            $this->patientTotalOrders = DB::table('sales')
+                ->where('patient_id', $patient->id)
+                ->count();
+
+            return; // stop disini, jangan load admin data
+        }
+
+        // =========================
+        // ADMIN DASHBOARD
+        // =========================
+
         $this->pendingOrders = DB::table('sales')
             ->where('status', 'posted')
             ->count();
@@ -28,16 +59,13 @@ class Index extends Component
             ->whereMonth('created_at', now()->month)
             ->count();
 
-        // Summary Right Cards
         $this->totalSales = DB::table('sales')->sum('grand_total');
         $this->totalPurchases = DB::table('purchases')->sum('grand_total');
         $this->totalReceivable = DB::table('sales')->sum('balance');
         $this->totalPayable = DB::table('purchases')->sum('balance');
 
-        // Banyak Order
         $this->totalOrders = DB::table('sales')->count();
 
-        // Product stock 0
         $this->outOfStockProducts = DB::table('products')
             ->leftJoin('purchase_details as pd', 'pd.product_id', '=', 'products.id')
             ->leftJoin('sale_details as sd', 'sd.product_id', '=', 'products.id')
