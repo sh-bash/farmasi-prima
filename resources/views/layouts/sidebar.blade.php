@@ -140,13 +140,13 @@
           </li>
           <li class="nav-main-heading">Transaction</li>
           <li class="nav-main-item">
-            <a class="nav-main-link {{ request()->routeIs('transaction.purchases') ? 'active' : '' }}"
-                href="{{ route('transaction.purchases') }}">
+            <a class="nav-main-link {{ request()->routeIs('transaction.purchases.index') ? 'active' : '' }}"
+                href="{{ route('transaction.purchases.index') }}">
                 <i class="nav-main-link-icon si si-basket-loaded"></i>
                 <span class="nav-main-link-name">Purchase</span>
             </a>
-            <a class="nav-main-link {{ request()->routeIs('transaction.sales') ? 'active' : '' }}"
-                href="{{ route('transaction.sales') }}">
+            <a class="nav-main-link {{ request()->routeIs('transaction.sales.index') ? 'active' : '' }}"
+                href="{{ route('transaction.sales.index') }}">
                 <i class="nav-main-link-icon si si-credit-card"></i>
                 <span class="nav-main-link-name">Sale</span>
             </a>
@@ -163,10 +163,20 @@
                 <i class="nav-main-link-icon si si-chart"></i>
                 <span class="nav-main-link-name">Purchase</span>
             </a>
+            <a class="nav-main-link {{ request()->routeIs('report.payable') ? 'active' : '' }}"
+                href="{{ route('report.payable') }}">
+                <i class="nav-main-link-icon si si-chart"></i>
+                <span class="nav-main-link-name">Payable Card</span>
+            </a>
             <a class="nav-main-link {{ request()->routeIs('report.sale') ? 'active' : '' }}"
                 href="{{ route('report.sale') }}">
                 <i class="nav-main-link-icon si si si-bar-chart"></i>
                 <span class="nav-main-link-name">Sale</span>
+            </a>
+            <a class="nav-main-link {{ request()->routeIs('report.receivable') ? 'active' : '' }}"
+                href="{{ route('report.receivable') }}">
+                <i class="nav-main-link-icon si si-chart"></i>
+                <span class="nav-main-link-name">Receivable Card</span>
             </a>
           </li>
           <li class="nav-main-heading">Account</li>

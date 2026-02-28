@@ -38,6 +38,13 @@ class Payment extends Component
         $this->balanceFinal = $this->sale->balance;
     }
 
+    public function updatedPaymentProof()
+    {
+        $this->validateOnly('payment_proof', [
+            'payment_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:4096',
+        ]);
+    }
+
     public function savePayment()
     {
         try {
