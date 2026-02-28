@@ -134,7 +134,7 @@
             </a>
             <a class="nav-main-link {{ request()->routeIs('master.suppiers') ? 'active' : '' }}"
                 href="{{ route('master.patients') }}">
-                <i class="nav-main-link-icon si si-briefcase"></i>
+                <i class="nav-main-link-icon si si-user"></i>
                 <span class="nav-main-link-name">Patient</span>
             </a>
           </li>
@@ -142,12 +142,25 @@
           <li class="nav-main-item">
             <a class="nav-main-link {{ request()->routeIs('transaction.purchases') ? 'active' : '' }}"
                 href="{{ route('transaction.purchases') }}">
-                <i class="nav-main-link-icon si si-basket"></i>
+                <i class="nav-main-link-icon si si-basket-loaded"></i>
                 <span class="nav-main-link-name">Purchase</span>
             </a>
             <a class="nav-main-link {{ request()->routeIs('transaction.sales') ? 'active' : '' }}"
                 href="{{ route('transaction.sales') }}">
-                <i class="nav-main-link-icon si si-basket"></i>
+                <i class="nav-main-link-icon si si-credit-card"></i>
+                <span class="nav-main-link-name">Sale</span>
+            </a>
+          </li>
+          <li class="nav-main-heading">Report</li>
+          <li class="nav-main-item">
+            <a class="nav-main-link {{ request()->routeIs('report.purchase') ? 'active' : '' }}"
+                href="{{ route('report.purchase') }}">
+                <i class="nav-main-link-icon si si si-chart"></i>
+                <span class="nav-main-link-name">Purchase</span>
+            </a>
+            <a class="nav-main-link {{ request()->routeIs('report.sale') ? 'active' : '' }}"
+                href="{{ route('report.sale') }}">
+                <i class="nav-main-link-icon si si si-bar-chart"></i>
                 <span class="nav-main-link-name">Sale</span>
             </a>
           </li>

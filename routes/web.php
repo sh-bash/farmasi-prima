@@ -2,11 +2,14 @@
 
 use App\Models\Master\Patient;
 use Illuminate\Support\Facades\Route;
+
 use App\Livewire\Master\Product\Index as ProductIndex;
 use App\Livewire\Master\Supplier\Index as SupplierIndex;
 use App\Livewire\Master\Patient\Index as PatientIndex;
+
 use App\Livewire\Account\Role\Index as RoleIndex;
 use App\Livewire\Account\User\Index as UserIndex;
+
 use App\Livewire\Transaction\Purchase\Index as PurchaseIndex;
 use App\Livewire\Transaction\Purchase\Create as PurchaseCreate;
 use App\Livewire\Transaction\Purchase\Edit as PurchaseEdit;
@@ -17,6 +20,10 @@ use App\Livewire\Transaction\Sale\Create as SaleCreate;
 use App\Livewire\Transaction\Sale\Edit as SaleEdit;
 use App\Livewire\Transaction\Sale\Payment as SalePayment;
 use App\Livewire\Transaction\Sale\Show as SaleShow;
+
+use App\Livewire\Report\Purchase\Index as PurchaseReportIndex;
+use App\Livewire\Report\Sale\Index as SaleReportIndex;
+
 use App\Livewire\Master\Product\KnnTest as KNNTest;
 use App\Livewire\Auth\Login as LoginComponent;
 
@@ -111,7 +118,6 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::prefix('sales')->group(function () {
-
             Route::get('/', SaleIndex::class)
                 ->middleware('permission:sales.view')
                 ->name('transaction.sales');
@@ -131,9 +137,17 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/transaction/purchases/{id}',SaleShow::class)
                 ->middleware('permission:sales.view')
                 ->name('transaction.sales.show');
-
         });
 
+        Route::prefix('report')->group(function () {
+            Route::get('/purchase', PurchaseReportIndex::class)
+                ->middleware('permission:purchase.view')
+                ->name('report.purchase');
+
+            Route::get('/sale', SaleReportIndex::class)
+                ->middleware('permission:sales.view')
+                ->name('report.sale');
+        });
     });
 
     /*
