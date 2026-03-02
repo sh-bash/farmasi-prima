@@ -33,6 +33,53 @@
                                    wire:model="sale_date">
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Doctor Name</label>
+                            <input type="text"
+                                   class="form-control"
+                                   wire:model="doctor_name">
+
+                            @error('doctor_name')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="col-mb-3">
+                            <label class="form-label">Upload Prescription</label>
+
+                            <input type="file"
+                                   class="form-control"
+                                   wire:model="prescription_photo">
+
+                            @error('prescription_photo')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+
+                            <div wire:loading wire:target="prescription_photo"
+                                 class="text-primary mt-1">
+                                Uploading...
+                            </div>
+
+                            {{-- Preview file lama --}}
+                            @if ($existing_prescription && !$prescription_photo)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/'.$existing_prescription) }}"
+                                         class="img-thumbnail"
+                                         width="200">
+                                </div>
+                            @endif
+
+                            {{-- Preview file baru --}}
+                            @if ($prescription_photo)
+                                <div class="mt-2">
+                                    <img src="{{ $prescription_photo->temporaryUrl() }}"
+                                         class="img-thumbnail"
+                                         width="200">
+                                </div>
+                            @endif
+
+                        </div>
+
                         {{-- Notes --}}
                         <div class="mb-3">
                             <label class="form-label">Notes</label>
@@ -55,6 +102,13 @@
                                     class="btn btn-sm btn-primary"
                                     wire:click="addRow">
                                 + Add Row
+                            </button>
+
+                            <button type="button"
+                                class="btn btn-sm btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#quickProductModal">
+                                + Add Product
                             </button>
                         </div>
                     </div>

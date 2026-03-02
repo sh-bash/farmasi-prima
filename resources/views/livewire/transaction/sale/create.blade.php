@@ -33,6 +33,44 @@
                                    wire:model="sale_date">
                         </div>
 
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Doctor Name</label>
+                                <input type="text"
+                                       class="form-control"
+                                       wire:model="doctor_name"
+                                       placeholder="Doctor Name">
+                                @error('doctor_name')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Upload Prescription</label>
+                                <input type="file"
+                                       class="form-control"
+                                       wire:model="prescription_photo">
+
+                                @error('prescription_photo')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+
+                                {{-- Loading indicator --}}
+                                <div wire:loading wire:target="prescription_photo" class="text-primary mt-1">
+                                    Uploading...
+                                </div>
+
+                                {{-- Preview image --}}
+                                @if ($prescription_photo)
+                                    <div class="mt-2">
+                                        <img src="{{ $prescription_photo->temporaryUrl() }}"
+                                             class="img-thumbnail"
+                                             width="200">
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
                         {{-- Notes --}}
                         <div class="mb-3">
                             <label class="form-label">Notes</label>
@@ -48,11 +86,19 @@
                     <div class="block-header block-header-default">
                         <h3 class="block-title">Sale Detail</h3>
 
+
                         <div class="block-options">
                             <button type="button"
                                     class="btn btn-sm btn-primary"
                                     wire:click="addRow">
                                 + Add Row
+                            </button>
+
+                            <button type="button"
+                                class="btn btn-sm btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#quickProductModal">
+                                + Add Product
                             </button>
                         </div>
                     </div>
@@ -302,7 +348,6 @@
         </div>
 
     </form>
-
 </div>
 
 @push('scripts')
@@ -378,8 +423,8 @@ function initProducts(){
         });
 
     });
-
 }
-
 </script>
+
+
 @endpush

@@ -28,6 +28,9 @@ class Edit extends Component
     public $previewProofPath = null;
     public $stockAvailable = [];
     public $originalItems = [];
+    public $doctor_name;
+    public $prescription_photo; // untuk upload baru
+    public $existing_prescription; // file lama
 
     public function mount($id)
     {
@@ -85,6 +88,9 @@ class Edit extends Component
                 'reference'    => '',
             ];
         }
+
+        $this->doctor_name = $this->sale->doctor_name;
+        $this->existing_prescription = $this->sale->prescription_photo;
     }
 
     /* ===============================
@@ -214,9 +220,11 @@ class Edit extends Component
     {
         $this->validate([
             'patient_id'        => 'required',
+            'doctor_name'       => 'required',
             'sale_date'         => 'required',
             'items.*.product_id'=> 'required',
             'payments.*.payment_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:4096',
+            'prescription_photo' => 'nullable|image|max:4096',
         ]);
 
         $paidTotal = $this->totalPayment;
@@ -265,9 +273,23 @@ class Edit extends Component
                 $status = $balance == 0 ? 'paid' : 'partial';
             }
 
+            if ($this->prescription_photo) {
+
+                // hapus file lama kalau ada
+                if ($this->existing_prescription) {
+                    \Storage::disk('public')->delete($this->existing_prescription);
+                }
+
+                $this->existing_prescription =
+                    $this->prescription_photo->store('prescriptions', 'public');
+            }
+
+
+
             $this->sale->update([
                 'patient_id'  => $this->patient_id,
                 'sale_date'   => $this->sale_date,
+                'doctor_name' => $this->doctor_name,
                 'subtotal'    => $this->subtotal,
                 'discount'    => $this->discount,
                 'tax'         => $this->tax,
@@ -276,6 +298,7 @@ class Edit extends Component
                 'balance'     => $balance,
                 'status'      => $status,
                 'notes'       => $this->notes,
+                'prescription_photo' => $this->existing_prescription,
             ]);
 
             // delete old details

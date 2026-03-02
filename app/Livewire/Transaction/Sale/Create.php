@@ -25,6 +25,8 @@ class Create extends Component
     public $payments = [];
     public $stockAvailable = [];
     public $isPatient = false;
+    public $doctor_name;
+    public $prescription_photo;
 
 
     protected $listeners = [
@@ -39,7 +41,6 @@ class Create extends Component
     public function mount()
     {
         $this->sale_date = now()->format('Y-m-d');
-
         $user = auth()->user();
 
         if ($user->hasRole('patient')) {
@@ -207,7 +208,6 @@ class Create extends Component
     {
 
         $user = auth()->user();
-
         // 🔐 Force patient_id jika login sebagai patient
         if ($user->hasRole('patient')) {
             $this->patient_id = $user->patient?->id;
@@ -220,6 +220,8 @@ class Create extends Component
             'sale_date' => 'required|date',
             'items.*.product_id' => 'required',
             'items.*.qty' => 'required|numeric|min:1',
+            'doctor_name' => 'required|string|max:255',
+            'prescription_photo' => 'nullable|image|max:2048',
             'payments.*.payment_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:4096',
         ];
 
@@ -287,6 +289,12 @@ class Create extends Component
                 $status = $balance == 0 ? 'paid' : 'partial';
             }
 
+            $prescription_path = null;
+
+            if ($this->prescription_photo) {
+                $prescription_path = $this->prescription_photo->store('prescriptions', 'public');
+            }
+
             $sale = Sale::create([
                 'sale_number' => 'SO-' . now()->format('YmdHis'),
                 'sale_date' => $this->sale_date,
@@ -299,6 +307,8 @@ class Create extends Component
                 'balance' => $balance,
                 'status' => $status,
                 'notes' => $this->notes,
+                'doctor_name' => $this->doctor_name,
+                'prescription_photo' => $prescription_path,
             ]);
 
             foreach ($this->items as $item) {
@@ -334,8 +344,7 @@ class Create extends Component
                 $proofPath = null;
 
                 if (!empty($payment['payment_proof'])) {
-                    $proofPath = $payment['payment_proof']
-                        ->store('payment_proofs', 'public');
+                    $proofPath = $payment['payment_proof']->store('payment_proofs', 'public');
                 }
 
 

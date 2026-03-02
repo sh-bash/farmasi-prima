@@ -70,6 +70,10 @@
         </div>
         <!-- END Page Content -->
       </main>
+
+      <div wire:ignore>
+            <livewire:master.product.quick />
+        </div>
       <!-- END Main Container -->
 
       @include('layouts.footer')

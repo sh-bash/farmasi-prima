@@ -125,11 +125,93 @@ document.addEventListener('livewire:init', () => {
         });
 
     }
+
+    Livewire.on('closeProductModal', () => {
+        const modalEl = document.getElementById('quickProductModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+    });
 </script>
 
 <script>
     window.addEventListener('play-sound', () => {
         new Audio('/notification.mp3').play();
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        function initSelect2() {
+
+            // Destroy dulu agar tidak double init
+            // $('.select2-category').select2('destroy');
+            // $('.select2-form').select2('destroy');
+            // $('.select2-ingredient').select2('destroy');
+
+            $('.select2-category').select2({
+                dropdownParent: $('#quickProductModal'),
+                width: '100%'
+            }).on('change', function () {
+                Livewire.dispatch('setCategory', this.value)
+            });
+
+            $('.select2-form').select2({
+                dropdownParent: $('#quickProductModal'),
+                width: '100%'
+            }).on('change', function () {
+                Livewire.dispatch('setForm', this.value)
+            });
+
+            initIngredients();
+        }
+
+        const modalEl = document.getElementById('quickProductModal');
+
+        if (modalEl) {
+            modalEl.addEventListener('shown.bs.modal', function () {
+                setTimeout(initSelect2, 100);
+            });
+        }
+
+        document.addEventListener('livewire:update', function () {
+            setTimeout(initSelect2, 100);
+        });
+
+
+    });
+
+    function initIngredients() {
+
+        document.querySelectorAll('.select2-ingredient').forEach(function(el){
+
+            // destroy kalau sudah ada
+            if ($(el).data('select2')) {
+                $(el).select2('destroy');
+            }
+
+            $(el).select2({
+                dropdownParent: $('#quickProductModal'),
+                width: '100%'
+            });
+
+            $(el).on('change', function(){
+
+                let index = this.dataset.index;
+
+                Livewire.dispatch('setIngredient', {
+                    index: index,
+                    value: this.value
+                });
+
+            });
+
+        });
+
+    }
+
+    Livewire.on('reinit-ingredients', () => {
+        setTimeout(initIngredients, 100);
     });
 </script>
 

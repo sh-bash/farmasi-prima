@@ -29,7 +29,10 @@ class Sale extends Model
 
         'created_by',
         'updated_by',
-        'deleted_by'
+        'deleted_by',
+
+        'doctor_name',
+        'prescription_photo'
     ];
 
     protected $casts = [

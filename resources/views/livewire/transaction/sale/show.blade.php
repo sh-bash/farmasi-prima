@@ -21,15 +21,32 @@
                             {{ $sale->patient->name ?? '-' }}
                         </div>
 
+                        <div class="col-mb-6">
+                            <strong>Doctor:</strong><br>
+                            {{ $sale->doctor_name ?? '-' }}
+                        </div>
+
                         <div class="col-md-6">
                             <strong>Date:</strong><br>
                             {{ \Carbon\Carbon::parse($sale->sale_date)->format('d M Y') }}
                         </div>
+
+                        <div class="col-mb-6">
+                            <strong>Notes:</strong><br>
+                            {{ $sale->notes ?? '-' }}
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <strong>Notes:</strong><br>
-                        {{ $sale->notes ?? '-' }}
+                        <strong>Prescription:</strong><br>
+                        <a href="#"
+                            wire:click.prevent="previewProof('{{ $sale->prescription_photo }}')"
+                            class="text-info fs-5"
+                            title="View Proof">
+                                <img src="{{ asset('storage/'.$sale->prescription_photo) }}"
+                                style="max-width:300px;"
+                                class="img-thumbnail">
+                        </a>
                     </div>
 
                 </div>
