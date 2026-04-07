@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 */
 
 use App\Livewire\Auth\Login as LoginComponent;
+use App\Livewire\Auth\ForgotPassword as ForgotPasswordComponent;
 
 use App\Livewire\Master\Product\Index as ProductIndex;
 use App\Livewire\Master\Supplier\Index as SupplierIndex;
@@ -62,6 +63,7 @@ use App\Http\Controllers\Api\PatientApiController as PatientAPI;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', LoginComponent::class)->name('login');
+    Route::get('/forgot-password', ForgotPasswordComponent::class)->name('password.request');
 });
 
 Route::middleware('auth')->group(function () {
@@ -140,10 +142,10 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/', DashboardIndex::class)->name('dashboard');
     Route::post('/notification/read/{id}', function ($id) {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
 
-        $notification = auth()->user()
-            ->notifications()
-            ->find($id);
+        $notification = $user ? $user->notifications()->find($id) : null;
 
         if ($notification) {
             $notification->markAsRead();
