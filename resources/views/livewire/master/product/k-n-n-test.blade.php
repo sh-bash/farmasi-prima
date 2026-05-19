@@ -102,12 +102,6 @@
                     <div class="card mb-4 border">
                         <div class="card-header bg-dark text-white">
                             Candidate: {{ $result['product'] }}
-                            <span class="float-end">
-                                Distance:
-                                <span class="badge bg-danger">
-                                    {{ number_format($result['distance'], 4) }}
-                                </span>
-                            </span>
                         </div>
 
                         <div class="card-body p-0">
@@ -131,6 +125,14 @@
                                         <td>{{ $step['square'] }}</td>
                                     </tr>
                                     @endforeach
+                                    <tr class="table-warning fw-bold">
+                                        <td colspan="4" class="text-end">Total (Σ diff²)</td>
+                                        <td>{{ number_format($result['sum'], 4) }}</td>
+                                    </tr>
+                                    <tr class="table-success fw-bold">
+                                        <td colspan="4" class="text-end">Euclidean Distance (√Total)</td>
+                                        <td>{{ number_format($result['distance'], 4) }}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

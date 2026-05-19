@@ -43,10 +43,103 @@
                     @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" wire:model="category_id">
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('category_id') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Form (Sediaan)</label>
+                        <select class="form-select" wire:model="form_id">
+                            <option value="">-- Select Form --</option>
+                            @foreach($forms as $form)
+                                <option value="{{ $form->id }}">{{ $form->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('form_id') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">HET</label>
                     <input type="number" class="form-control" wire:model="het">
                     @error('het') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+
+                {{-- Ingredients Detail --}}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ingredients (Zat Aktif)</label>
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ingredient</th>
+                                <th width="130">Strength</th>
+                                <th width="110">Unit</th>
+                                <th width="50"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($ingredientRows as $idx => $row)
+                                <tr>
+                                    <td>
+                                        <select class="form-select form-select-sm"
+                                                wire:model="ingredientRows.{{ $idx }}.ingredient_id">
+                                            <option value="">-- Select --</option>
+                                            @foreach($ingredients as $ing)
+                                                <option value="{{ $ing->id }}">{{ $ing->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error("ingredientRows.$idx.ingredient_id")
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </td>
+                                    <td>
+                                        <input type="number"
+                                               class="form-control form-control-sm"
+                                               wire:model="ingredientRows.{{ $idx }}.strength"
+                                               placeholder="e.g. 500">
+                                        @error("ingredientRows.$idx.strength")
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                               class="form-control form-control-sm"
+                                               wire:model="ingredientRows.{{ $idx }}.unit"
+                                               placeholder="mg / ml">
+                                        @error("ingredientRows.$idx.unit")
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button"
+                                                class="btn btn-sm btn-alt-danger"
+                                                wire:click="removeIngredientRow({{ $idx }})">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted small">
+                                        No ingredients added.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                    <button type="button"
+                            class="btn btn-sm btn-alt-secondary"
+                            wire:click="addIngredientRow">
+                        <i class="fa fa-plus me-1"></i> Add Ingredient
+                    </button>
                 </div>
 
                 <div class="text-end">

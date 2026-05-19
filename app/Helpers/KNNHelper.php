@@ -118,13 +118,13 @@ class KNNHelper
      */
     private static function euclideanDistance($a, $b)
     {
-        $sum = 0;
+            $sum = 0;
 
-        for ($i = 0; $i < count($a); $i++) {
-            $sum += pow($a[$i] - $b[$i], 2);
-        }
+            for ($i = 0; $i < count($a); $i++) {
+                $sum += pow($a[$i] - $b[$i], 2);
+            }
 
-        return sqrt($sum);
+            return sqrt($sum);
     }
 
     public static function findSubstitutesWithDetail($productId, $k = 5)
