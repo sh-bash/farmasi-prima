@@ -68,6 +68,30 @@ class KNNHelper
     }
 
     /**
+     * Resolve ingredient names for the vector space.
+     */
+    private static function getIngredientNames($target, $candidates, $ingredientIds)
+    {
+        return collect($ingredientIds)->map(function ($id) use ($target, $candidates) {
+            $name = optional($target->ingredients->firstWhere('id', $id))->name;
+
+            if ($name) {
+                return $name;
+            }
+
+            foreach ($candidates as $candidate) {
+                $name = optional($candidate->ingredients->firstWhere('id', $id))->name;
+
+                if ($name) {
+                    return $name;
+                }
+            }
+
+            return 'Unknown Ingredient';
+        })->values();
+    }
+
+    /**
      * Build vector produk
      * Vector = [ingredient1_strength, ingredient2_strength, ..., price_scaled]
      */
@@ -158,7 +182,7 @@ class KNNHelper
             $sum += $priceSquare;
 
             $calculation[] = [
-                'ingredient' => 'PRICE (scaled)',
+                'ingredient' => 'HET Price (scaled)',
                 'target' => $priceTarget,
                 'candidate' => $priceCandidate,
                 'diff' => $priceDiff,
@@ -222,12 +246,12 @@ class KNNHelper
         // ========================
         $ingredientIds = self::getAllIngredientIds($target, $candidates);
 
-        $ingredientNames = collect($ingredientIds)->map(function ($id) use ($target, $candidates) {
-            return optional($target->ingredients->firstWhere('id', $id))->name
-                ?? optional($candidates->first()->ingredients->firstWhere('id', $id))->name;
-        });
+        $ingredientNames = self::getIngredientNames($target, $candidates, $ingredientIds);
 
-        $log['step_3_vector_space'] = $ingredientNames;
+        $featureLabels = $ingredientNames->toArray();
+        $featureLabels[] = 'HET Price';
+
+        $log['step_3_vector_space'] = $featureLabels;
 
         // ========================
         // STEP 4 - TARGET VECTOR
@@ -253,7 +277,7 @@ class KNNHelper
                 $sum += $square;
 
                 $calcDetail[] = [
-                    'feature' => $ingredientNames[$i] ?? 'price',
+                    'feature' => $featureLabels[$i] ?? 'HET Price',
                     'target' => $targetVector[$i],
                     'candidate' => $vector[$i],
                     'diff' => $diff,
