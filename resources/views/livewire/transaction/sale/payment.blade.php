@@ -93,6 +93,44 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
 
+                        <div wire:loading wire:target="payment_proof" class="text-primary mt-1">
+                            Uploading...
+                        </div>
+
+                        @if ($payment_proof)
+                            <div class="mt-2">
+                                @php
+                                    $extension = null;
+
+                                    if (is_object($payment_proof)) {
+                                        if (method_exists($payment_proof, 'getClientOriginalExtension')) {
+                                            $extension = $payment_proof->getClientOriginalExtension();
+                                        } elseif (method_exists($payment_proof, 'extension')) {
+                                            $extension = $payment_proof->extension();
+                                        } elseif (method_exists($payment_proof, 'getClientOriginalName')) {
+                                            $extension = pathinfo($payment_proof->getClientOriginalName(), PATHINFO_EXTENSION);
+                                        }
+                                    } elseif (is_string($payment_proof)) {
+                                        $extension = pathinfo($payment_proof, PATHINFO_EXTENSION);
+                                    }
+
+                                    $extension = strtolower($extension ?? '');
+                                @endphp
+
+                                @if(in_array($extension, ['jpg','jpeg','png']))
+                                    <img src="{{ $payment_proof->temporaryUrl() }}"
+                                         class="img-thumbnail"
+                                         width="200">
+                                @elseif($extension === 'pdf')
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="{{ $payment_proof->temporaryUrl() }}"></iframe>
+                                    </div>
+                                @else
+                                    <small class="text-muted">Preview not available for this file type.</small>
+                                @endif
+                            </div>
+                        @endif
+
                         <button class="btn btn-success">
                             Save Payment
                         </button>

@@ -26,6 +26,14 @@ class Login extends Component
             'password' => $this->password
         ])) {
 
+            $user = Auth::user();
+
+            if ($user->hasRole('patient') && ! $user->patient()->exists()) {
+                Auth::logout();
+                $this->addError('email', 'Data pasien tidak ditemukan, silahkan buat user melalui master pasien');
+                return;
+            }
+
             session()->regenerate();
             return redirect()->route('dashboard');
         }
